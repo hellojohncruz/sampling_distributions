@@ -97,18 +97,9 @@ This command collects a simple random sample of size 50 from the `global_monitor
 
 1.  Describe the distribution of responses in this sample. How does it compare to the distribution of responses in the population. **Hint:** Although the `sample_n` function takes a random sample of observations (i.e. rows) from the dataset, you can still refer to the variables in the dataset with the same names. Code you presented earlier for visualizing and summarizing the population data will still be useful for the sample, however be careful to not label your proportion `p` since you're now calculating a sample statistic, not a population parameters. You can customize the label of the statistics to indicate that it comes from the sample.
 
-We can see that both the population and sample distributions proportions does not have drastic differences between each other based on the bar graph. 
+The comparison bar graph shows that both the population and sampling distributions proportions does not have drastic differences between each other. However, we have not verified if this sample is statistically representative of the population. 
 
-```{r samp1-graph}
-ggplot(samp1, aes(x = scientist_work)) +
-  geom_bar() +
-  labs(
-    x = "", y = "",
-    subtitle = "Sample = 50",
-    title = "Do you believe that the work scientists do benefit people like you?"
-  ) +
-  coord_flip() 
-
+```{r samp1-graph, fig.height=2.5, fig.width=10}
 samp1_tbl <- 
   samp1 %>%
   count(scientist_work) %>%

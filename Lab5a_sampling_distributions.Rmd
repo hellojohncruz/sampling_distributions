@@ -2,7 +2,6 @@
 title: "Foundations for statistical inference - Sampling distributions"
 author: "John Cruz"
 output:
-  pdf_document: default
   html_document:
     includes:
       in_header: header.html
@@ -11,6 +10,7 @@ output:
     theme: cerulean
     toc: true
     toc_float: true
+  pdf_document: default
 editor_options: 
   chunk_output_type: console
 ---
@@ -248,10 +248,10 @@ Each observation in the sampling distribution represents the sampling proportion
 | sample size | mean | std_error |
 | :---------- | :--- | :-------- |
 |     10      | 0.22 |    0.11   |
-|     10      | 0.20 |    0.06   |
+|     50      | 0.20 |    0.06   |
 |    100      | 0.20 |    0.04   |
 
-We can see that as the sample size increase, the mean gets closer to the population mean and the standard error decreases. We also see the shape of the sampling distributions go from right-skewed, to normally distributed, to almost no tails, where the variation from the mean is low. 
+We can see that as the sample size increase, the mean gets closer to the population mean and the standard error decreases. We also see the shape of the sampling distributions go from right-skewed, to normally distributed, to almost no tails, where the variation from the mean is low. As for increasing the number of simulations, it does change the mean and standard error if the sample size is small, however, the sample size itself has more of a effect on mean and standard error. 
     
 ```{r shiny, echo=FALSE, eval=FALSE, results = TRUE}
 # This R chunk will only run in interactive mode.
@@ -357,16 +357,56 @@ Note that while you might be able to answer some of these questions using the ap
 7.  Take a sample of size 15 from the population and calculate the proportion of 
     people in this sample who think the work scientists do enhances their lives. 
     Using this sample, what is your best point estimate of the population proportion 
-    of people who think the work scientists do enchances their lives?
+    of people who think the work scientists do enhances their lives?
+    
+Based on a sample size of 15, a close estimate for the population proportion is 86% of people think work scientists do enhances their lives. 
+    
+```{r benefits-sample}
+samp1_ben <- 
+  global_monitor |> 
+  sample_n(15)
+
+samp1_ben_tbl <- 
+  samp1_ben |> 
+  count(scientist_work) |> 
+  mutate(sample_prop = n / sum(n))
+
+knitr::kable(samp1_ben_tbl)
+
+```
 
 8.  Since you have access to the population, simulate the sampling 
-    distribution of proportion of those who think the work scientists do enchances 
+    distribution of proportion of those who think the work scientists do enhances 
     their lives for samples of size 15 by taking 2000 samples from the population 
     of size 15 and computing 2000 sample proportions. Store these proportions in 
     as `sample_props15`. Plot the data, then describe the shape of this sampling 
     distribution. Based on this sampling distribution, what would you guess the 
     true proportion of those who think the work scientists do enchances their lives 
     to be? Finally, calculate and report the population proportion.
+    
+The sampling distribution looks left-skewed. Based on the distribution, the population mean should be roughly 0.75, given the skewness. We can verify if this is true based on the table provided, which is exactly 0.8.
+    
+```{r rep-benefits-sample15}
+
+sample_props15 <- 
+  global_monitor |> 
+  rep_sample_n(size = 15, reps = 2000, replace = TRUE) |> 
+  count(scientist_work) |> 
+  mutate(p_hat = n /sum(n)) |> 
+  filter(scientist_work == "Benefits")
+  
+
+sample_props15 |> 
+  ggplot(aes(x = p_hat)) +
+  geom_histogram(binwidth = 0.02) +
+  labs(
+    x = "p_hat (Benefits)",
+    title = "Sampling distribution of p_hat",
+    subtitle = "Sample size = 15, Number of samples = 2000"
+  )
+
+knitr::kable(global_monitor_tbl)
+```
 
 9.  Change your sample size from 15 to 150, then compute the sampling 
     distribution using the same method as above, and store these proportions in a 
@@ -376,8 +416,31 @@ Note that while you might be able to answer some of these questions using the ap
     be the true proportion of those who think the work scientists do enchances 
     their lives?
 
+The sampling distribution looks normally distributed. Compared to the sample size of 15, we can see that the larger sample size minimizes any skewness. Based on this distribution we can see the mean being 0.8, which is the population proportion. 
+
+```{r rep-benefits-sample150}
+
+sample_props150 <- 
+  global_monitor |> 
+  rep_sample_n(size = 150, reps = 2000, replace = TRUE) |> 
+  count(scientist_work) |> 
+  mutate(p_hat = n /sum(n)) |> 
+  filter(scientist_work == "Benefits")   
+
+sample_props150 |> 
+  ggplot(aes(x = p_hat)) +
+  geom_histogram(binwidth = 0.02) +
+  labs(
+    x = "p_hat (Benefits)",
+    title = "Sampling distribution of p_hat",
+    subtitle = "Sample size = 150, Number of samples = 2000"
+  )
+```
+
 10.  Of the sampling distributions from 2 and 3, which has a smaller spread?  If
     you're concerned with making estimates that are more often close to the 
     true value, would you prefer a sampling distribution with a large or small spread?
+    
+When the sample size is larger, we can see the spread to be smaller. If we want to be able to capture the true population, the smaller the spread, the closer we are to the population mean. 
 
 * * *

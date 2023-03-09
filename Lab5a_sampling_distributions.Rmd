@@ -17,7 +17,7 @@ editor_options:
 
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(eval = TRUE, message = FALSE, warning = FALSE)
-set.seed(1234)
+set.seed(2000)
 ```
 
 In this lab, you will investigate the ways in which the statistics from a random sample of data can serve as point estimates for population parameters. We're interested in formulating a *sampling distribution* of our estimate in order to learn about the properties of the estimate, such as its distribution.
@@ -65,6 +65,7 @@ ggplot(global_monitor, aes(x = scientist_work)) +
   geom_bar() +
   labs(
     x = "", y = "",
+    subtitle = "Population = 100k",
     title = "Do you believe that the work scientists do benefit people like you?"
   ) +
   coord_flip() 
@@ -73,9 +74,12 @@ ggplot(global_monitor, aes(x = scientist_work)) +
 We can also obtain summary statistics to confirm we constructed the data frame correctly.
 
 ```{r summ-stat-pop, results = TRUE}
-global_monitor %>%
+global_monitor_tbl <-
+  global_monitor %>%
   count(scientist_work) %>%
-  mutate(p = n /sum(n))
+  mutate(pop_prop = n /sum(n))
+
+knitr::kable(global_monitor_tbl)
 ```
 
 ## The unknown sampling distribution
@@ -92,6 +96,39 @@ samp1 <- global_monitor %>%
 This command collects a simple random sample of size 50 from the `global_monitor` dataset, and assigns the result to `samp1`. This is similar to randomly drawing names from a hat that contains the names of all in the population. Working with these 50 names is considerably simpler than working with all 100,000 people in the population.
 
 1.  Describe the distribution of responses in this sample. How does it compare to the distribution of responses in the population. **Hint:** Although the `sample_n` function takes a random sample of observations (i.e. rows) from the dataset, you can still refer to the variables in the dataset with the same names. Code you presented earlier for visualizing and summarizing the population data will still be useful for the sample, however be careful to not label your proportion `p` since you're now calculating a sample statistic, not a population parameters. You can customize the label of the statistics to indicate that it comes from the sample.
+
+We can see that both the population and sample distributions proportions does not have drastic differences between each other based on the bar graph. 
+
+```{r samp1-graph}
+ggplot(samp1, aes(x = scientist_work)) +
+  geom_bar() +
+  labs(
+    x = "", y = "",
+    subtitle = "Sample = 50",
+    title = "Do you believe that the work scientists do benefit people like you?"
+  ) +
+  coord_flip() 
+
+samp1_tbl <- 
+  samp1 %>%
+  count(scientist_work) %>%
+  mutate(sample_prop = n /sum(n))
+
+knitr::kable(samp1_tbl)
+
+samp1_rbind <- samp1_tbl |> 
+  pivot_longer(cols = 'sample_prop', names_to = 'prop_type', values_to = 'prop')
+
+global_rbind <- global_monitor_tbl |> 
+  pivot_longer(cols = 'pop_prop', names_to = 'prop_type', values_to = 'prop')
+
+rbind(global_rbind, samp1_rbind) |> 
+  ggplot(aes(x = scientist_work, y = prop, fill = prop_type)) +
+  geom_bar(stat = 'identity', position = 'dodge') +
+  geom_text(aes(label = scales::percent(prop), fontface = 'bold'), position = position_dodge2(width = 0.9), hjust = 1.1, vjust = 0.5) +
+  coord_flip()
+
+```
 
 If you're interested in estimating the proportion of all people who do not believe that the work scientists do benefits them, but you do not have access to the population data, your best single guess is the sample mean.
 
